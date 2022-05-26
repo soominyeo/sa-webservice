@@ -2,8 +2,12 @@ package dev.soominyeo.web.account;
 
 import dev.soominyeo.web.exceptions.AccountNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 @RestController
@@ -20,22 +24,51 @@ public class AccountController {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public Account findAccount(@RequestParam(value = "id", required = false) Long id,
-                            @RequestParam(value = "email", required = false) String email,
-                            @RequestParam(value="username", required = false) String username) {
+    public List<Account> findAccount(
+                                     @RequestParam(value = "email", required = false) String email,
+                                     @RequestParam(value = "username", required = false) String username,
+                                     @RequestParam(value = "nickname", required = false) String nickname) {
         logger.info("account-service findAccount() invoked: ");
-        Account account = null;
-        if (id != null) {
-            account = accountRepository.findById(id);
-        } else if (email != null) {
-            account = accountRepository.findByEmail(email);
+        List<Account> accounts;
+        String by = null;
+
+        if (email != null) {
+            accounts = List.of(accountRepository.findByEmail(email));
+            by = "email=" + email;
         } else if (username != null) {
-            account = accountRepository.findByUsername(username);
+            accounts = accountRepository.findByUsername(username);
+            by = "username=" + username;
+        } else if (nickname != null) {
+            accounts = accountRepository.findByNickname(nickname);
+            by = "nickname=" + nickname;
+        } else {
+            accounts = accountRepository.findAll();
+            by = "none";
         }
 
+        if (accounts.size() == 0)
+            throw new AccountNotFoundException(by);
+        logger.info("account-service findAccount() result: " + by);
+        return accounts;
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public Account byId(@PathVariable("id") long id) {
+        logger.info("account-service byId() invoked: ");
+        Account account = accountRepository.findById(id);
         if (account == null)
-            throw new AccountNotFoundException(email);
-        logger.info("account-service findAccount() result: " + account);
+            throw new AccountNotFoundException(Long.toString(id));
+        logger.info("account-service byId() result: " + account);
         return account;
+    }
+
+    @RequestMapping(value = "/{id}/email", method = RequestMethod.GET)
+    public String getEmail(@PathVariable("id") long id) {
+        logger.info("account-service getEmail() invoked: " + id);
+        Account account = accountRepository.findById(id);
+        if (account == null)
+            throw new AccountNotFoundException(Long.toString(id));
+        logger.info("account-service getEmail() result: " + account.email);
+        return account.getEmail();
     }
 }

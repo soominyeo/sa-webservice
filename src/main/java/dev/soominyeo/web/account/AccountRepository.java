@@ -10,7 +10,9 @@ public interface AccountRepository extends Repository<Account, Long> {
 
     Account findByEmail(String email);
 
-    Account findByUsername(String username);
+    List<Account> findByUsername(String username);
 
     List<Account> findByNickname(String nickname);
+
+    List<Account> findAll();
 }

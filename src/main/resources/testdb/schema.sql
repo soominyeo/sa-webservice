@@ -1,0 +1,14 @@
+CREATE TABLE account (
+  id BIGINT NOT NULL,
+   email VARCHAR(255),
+   username VARCHAR(255) NOT NULL,
+   nickname VARCHAR(255),
+   created_at TIMESTAMP NOT NULL,
+   CONSTRAINT pk_account PRIMARY KEY (id)
+);
+
+ALTER TABLE account ADD CONSTRAINT uc_45e912e6ea31be18e6ff710ca UNIQUE (username);
+
+ALTER TABLE account ADD CONSTRAINT uc_8d424a1a3dedf8a4b569ceae2 UNIQUE (email);
+
+CREATE SEQUENCE hibernate_sequence AS BIGINT  START WITH 1 INCREMENT BY 1;
